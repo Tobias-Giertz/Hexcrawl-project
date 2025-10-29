@@ -1,6 +1,8 @@
+import numpy as np
+
 def get_axial(col_row:int):
     # takes (col,row) coordinates: returns axial coordinates
-    q = col_row[0] - (col_row[1] // 2)
+    q = col_row[0] - (col_row[1]) // 2
     r = col_row[1]
     return q, r
 
@@ -60,6 +62,14 @@ def get_cell(col_row_a, col_row_b=None):
 
 
 
+def get_planar_coords(col_row):
+    q, r = get_axial(col_row)
+    x = np.sqrt(3.0) * (q + 0.5 * r)
+    y = 1.5 * r
+    return x, y    
+
+
+
 # ----------------- TEST AREA ----------------- #
 
 if __name__ == "__main__":
@@ -68,5 +78,7 @@ if __name__ == "__main__":
     c = (1, 0)
     d = (1, 1)
 
-    test = get_neighbors(a)
+    list_a = [(0, 0, 1, 1), (0, 1, 0, 1)]
+
+    test = get_axial(list_a)
     print(test)
