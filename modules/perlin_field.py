@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 
 def _perlin2d(x, y, p):
     # x, y:
@@ -52,10 +53,95 @@ def _permutation_table(seed: int):
 
 
 
+def noise_mesh(
+    df, 
+    seed = 0,
+    amp = 1.0,
+    freq = 1.0,
+    max_amp = 0.0,
+    octaves = 4,
+    scale = 12,
+    persistence = 0.5,
+    lacunarity = 2.0,
+    label = "noise"
+    ):
+    
+    x = df['x'].to_numpy(dtype=float)
+    y = df['y'].to_numpy(dtype=float)
+
+    p = _permutation_table(seed)
+    total = np.zeros_like(x, dtype=float) 
+
+    for n in range(octaves):
+        n_x = (x * freq) / max(1e-9, scale)
+        n_y = (y * freq) / max(1e-9, scale)
+        total += amp * _perlin2d(n_x, n_y, p)
+        max_amp += amp
+        amp *= persistence
+        freq *= lacunarity
+
+    noise = (total / max_amp) * 0.5 + 0.5  # till [0,1]
+    df[label] = noise.astype("float32")
+
+    return df
+
+
+import matplotlib.pyplot as plt
+from matplotlib.tri import Triangulation
+def render_height_3d(df, *, z_col="noise", title="Height 3D"):
+    if z_col not in df.columns:
+        raise KeyError(f"'{z_col}' column not found in DataFrame.")
+
+    x, y = df['x'].to_numpy(), df['y'].to_numpy()
+
+    z = pd.to_numeric(df[z_col], errors="coerce").to_numpy()
+
+    m = np.isfinite(x) & np.isfinite(y) & np.isfinite(z)
+    x, y, z = x[m], y[m], z[m]
+    if len(x) < 3:
+        raise ValueError("Not enough valid points to render a 3D surface (need ≥ 3).")
+
+    tri = Triangulation(x, y)
+
+    fig = plt.figure(figsize=(8, 6))
+    ax = fig.add_subplot(projection="3d")
+    ax.plot_trisurf(tri, z, linewidth=0.2, antialiased=True)
+
+    ax.set_title(title)
+    ax.set_xlabel("X")
+    ax.set_ylabel("Y")
+    ax.set_zlabel(z_col)
+    plt.show()
+
+
+
 # ----------------- TEST AREA ----------------- #
 
 if __name__ == "__main__":
-    x = 1
-    y = 1
-    seed = 0
-    print(_perlin2d(x, y, _permutation_table(seed)))
+    x = 10
+    y = 10
+
+    data = []
+    for i in range(x):
+        for j in range(y):
+            data.append({
+                "x": i,
+                "y": j
+            })
+    df = pd.DataFrame(data, columns=["x", "y"])
+
+    df = noise_mesh(
+        df = df,
+        seed = 1,
+        amp = 1.0,
+        freq = 1.0,
+        max_amp = 0.0,
+        octaves = 4,
+        scale = 12,
+        persistence = 0.5,
+        lacunarity = 2.0,
+        )
+
+    print(df)
+
+    render_height_3d(df)

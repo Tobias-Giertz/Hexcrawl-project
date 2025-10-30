@@ -55,10 +55,10 @@ def generate_hex_map(columns, rows, seed):
     # ladda .json
 
     # koordinater
-    df = build_coordinates(columns, rows)
+    df = build_coordinates(columns, rows, seed)
 
     # noise
-    df = assign_noise(df, seed)
+    # df = assign_noise(df, mesh)
 
     # topografi
     # assign_topography
@@ -88,4 +88,5 @@ if __name__ == "__main__":
     # generate_hex_map(columns, rows)
 
     map_df = generate_hex_map(columns, rows, seed)
-    #print(map_df)
+    col_row_rairs = list(zip(map_df['col'], map_df['row']))
+    print(col_row_rairs)
