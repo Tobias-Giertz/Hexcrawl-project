@@ -16,7 +16,7 @@ def get_cube(col:int, row:int):
 
 
 
-def get_coords(a:int, b:int, c:int=None):
+def get_coords(a:int, b:int, c:int=None): # type: ignore
     # takes cube or axial: returns (col,row) coordinates
     if c is not None:
         col = a + ((c - (c % 2)) // 2)
@@ -44,7 +44,7 @@ def get_neighbors(col:int, row:int):
 
 
 
-def get_cell(col_a:int, row_a:int, col_b:int=None, row_b:int=None):
+def get_cell(col_a:int, row_a:int, col_b:int=None, row_b:int=None): # type: ignore
     # takes (col,row) coordinates: returns cell designation 'A1' or range 'A1:B2'
     def to_letters(c):
         letters = ''
@@ -80,7 +80,6 @@ def get_colrow_from_cartesian(px:float, py:float):
 # ----------------- TEST AREA ----------------- #
 
 if __name__ == "__main__":
-    """
     a = 1
     b = 1
     c = 2
@@ -121,4 +120,3 @@ if __name__ == "__main__":
         x, y = get_cartesian(coord[0],coord[1])
         coordinates.append(get_colrow_from_cartesian(x, y))
     print(coordinates)
-    """

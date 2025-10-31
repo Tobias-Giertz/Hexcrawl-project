@@ -1,17 +1,17 @@
 {
-  "perlin_field": {
+  "map_settings": {
     "seed": 0,
     "amp": 1.0,
     "freq": 1.0,
     "max_amp": 0.0,
-    "octaves": 4,
+    "octaves": 2,
     "scale": 12,
     "persistence": 0.5,
-    "lacunarity": 2.0
-  },
-  "hex_mapgeneration": {
-    "t_mountain": 0.85,
-    "t_hill": 0.70,
-    "t_plains": 0.40
+    "lacunarity": 2.0,
+    "t_mountain": 0.55,
+    "t_hill": 0.45,
+    "t_plains": 0.35,
+    "forest_density": 0.5,
+    "bog_neighbors": 3
   }
 }
