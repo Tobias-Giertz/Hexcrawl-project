@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from modules.config import get_section
+from config import get_section
 
 # ------------ Functions ------------
 

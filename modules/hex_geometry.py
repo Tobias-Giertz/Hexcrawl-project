@@ -70,6 +70,7 @@ def get_cartesian(col:int, row:int):
 
 
 def get_colrow_from_cartesian(px:float, py:float):
+    # transforms cartesian coordinates to (col, row)
     row = int(round(py))
     col = int(round(px * (1.5/np.sqrt(3)) - 0.5*(row % 2)))
     return col, row
@@ -79,7 +80,7 @@ def get_colrow_from_cartesian(px:float, py:float):
 # ----------------- TEST AREA ----------------- #
 
 if __name__ == "__main__":
-
+    """
     a = 1
     b = 1
     c = 2
@@ -120,3 +121,4 @@ if __name__ == "__main__":
         x, y = get_cartesian(coord[0],coord[1])
         coordinates.append(get_colrow_from_cartesian(x, y))
     print(coordinates)
+    """
