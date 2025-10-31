@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import json
 
 def _perlin2d(x, y, p):
     # x, y:
@@ -54,7 +55,7 @@ def _permutation_table(seed: int):
 
 
 def noise_mesh(
-    df, 
+    *,
     seed = 0,
     amp = 1.0,
     freq = 1.0,
@@ -66,9 +67,6 @@ def noise_mesh(
     label = "noise"
     ):
     
-    x = df['x'].to_numpy(dtype=float)
-    y = df['y'].to_numpy(dtype=float)
-
     p = _permutation_table(seed)
     total = np.zeros_like(x, dtype=float) 
 
@@ -115,11 +113,17 @@ def render_height_3d(df, *, z_col="noise", title="Height 3D"):
 
 
 
+with open("settings.json", "r") as f:
+    params = json.load(f)
+    print(params)
+
+
 # ----------------- TEST AREA ----------------- #
 
 if __name__ == "__main__":
-    x = 10
-    y = 10
+    """
+    x = 20
+    y = 60
 
     data = []
     for i in range(x):
@@ -136,12 +140,12 @@ if __name__ == "__main__":
         amp = 1.0,
         freq = 1.0,
         max_amp = 0.0,
-        octaves = 4,
+        octaves = 12,
         scale = 12,
         persistence = 0.5,
         lacunarity = 2.0,
         )
+    """
+    # print(df)
 
-    print(df)
-
-    render_height_3d(df)
+    # render_height_3d(df)

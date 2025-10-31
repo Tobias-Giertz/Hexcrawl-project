@@ -1,0 +1,6 @@
+{
+  "velocity": 20.0,
+  "angle_degrees": 45.0,
+  "time_step": 0.01,
+  "air_resistance": false
+}
