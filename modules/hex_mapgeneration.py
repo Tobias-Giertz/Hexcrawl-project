@@ -1,4 +1,4 @@
-from hex_geometry import get_planar_coords
+from hex_geometry import get_cartesian
 from perlin_field import noise_mesh
 
 import pandas as pd
@@ -20,21 +20,8 @@ def build_coordinates(cols: int, rows: int, map_id: str = "map001"):
 
 
 def assign_noise(df, seed, label = "noise"):
-    x_y = df.apply(lambda r: get_planar_coords(r['col'], r['row']), axis=1)
+    x_y = df.apply(lambda r: get_cartesian(r['col'], r['row']), axis=1)
     df['x'], df['y'] = zip(*x_y)
-
-    df = noise_mesh(
-        df, 
-        seed = 0,
-        amp = 1.0,
-        freq = 1.0,
-        max_amp = 0.0,
-        octaves = 4,
-        scale = 12,
-        persistence = 0.5,
-        lacunarity = 2.0,
-        label = "noise"
-        )
 
     return df
 

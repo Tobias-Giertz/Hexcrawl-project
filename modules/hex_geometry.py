@@ -60,7 +60,7 @@ def get_cell(col_a:int, row_a:int, col_b:int=None, row_b:int=None):
 
 
 
-def get_planar_coords(col:int, row:int):
+def get_cartesian(col:int, row:int):
     # transforms (col, row) to planar points
     q, r = get_axial(col, row)
     x = np.sqrt(3.0) * (q + 0.5 * r) / 1.5
@@ -69,7 +69,7 @@ def get_planar_coords(col:int, row:int):
 
 
 
-def get_colrow_from_planar(px:float, py:float):
+def get_colrow_from_cartesian(px:float, py:float):
     row = int(round(py))
     col = int(round(px * (1.5/np.sqrt(3)) - 0.5*(row % 2)))
     return col, row
@@ -109,14 +109,14 @@ if __name__ == "__main__":
     cells = get_cell(a, b, c, d)
     print('Cells:', cells)
 
-    x, y = get_planar_coords(a, b)
+    x, y = get_cartesian(a, b)
     print('Planar:', x, y)
 
-    colrow = get_colrow_from_planar(x, y)
+    colrow = get_colrow_from_cartesian(x, y)
     print('From planar:', colrow)
 
     coordinates = []
     for coord in list_a:
-        x, y = get_planar_coords(coord[0],coord[1])
-        coordinates.append(get_colrow_from_planar(x, y))
+        x, y = get_cartesian(coord[0],coord[1])
+        coordinates.append(get_colrow_from_cartesian(x, y))
     print(coordinates)

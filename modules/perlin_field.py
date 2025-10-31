@@ -1,6 +1,9 @@
 import numpy as np
 import pandas as pd
-import json
+
+from modules.config import get_section
+
+# ------------ Functions ------------
 
 def _perlin2d(x, y, p):
     # x, y:
@@ -54,18 +57,13 @@ def _permutation_table(seed: int):
 
 
 
-def noise_mesh(
-    *,
-    seed = 0,
-    amp = 1.0,
-    freq = 1.0,
-    max_amp = 0.0,
-    octaves = 4,
-    scale = 12,
-    persistence = 0.5,
-    lacunarity = 2.0,
-    label = "noise"
-    ):
+def xy_noise(x, y):
+    config = get_section("physics")
+    seed = config.get("seed")
+    octaves = config.get("octaves")
+    scale = config.get("scale")
+    persistence = config.get("persistence")
+    lacunarity = config.get("lacunarity")
     
     p = _permutation_table(seed)
     total = np.zeros_like(x, dtype=float) 
@@ -79,9 +77,17 @@ def noise_mesh(
         freq *= lacunarity
 
     noise = (total / max_amp) * 0.5 + 0.5  # till [0,1]
-    df[label] = noise.astype("float32")
+    print(noise)
+    # df[label] = noise.astype("float32")
 
-    return df
+    return noise.astype("float32")
+
+
+
+def build_mesh(df, label = "noise"):
+    #df[label] = 
+    return
+
 
 
 import matplotlib.pyplot as plt
@@ -113,14 +119,25 @@ def render_height_3d(df, *, z_col="noise", title="Height 3D"):
 
 
 
-with open("settings.json", "r") as f:
-    params = json.load(f)
-    print(params)
+def test_settings():
+    cfg = get_section("perlin_field")
+    frequency = cfg.get("frequency")
+    octaves = cfg.get("octaves")
+    seed = cfg.get("seed")
+    print("perlin_field settings:", cfg)
+    return frequency, octaves, seed
+
+
+#with open("settings.json", "r") as f:
+#    params = json.load(f)
+#    print(params)
 
 
 # ----------------- TEST AREA ----------------- #
 
 if __name__ == "__main__":
+
+    test_settings()
     """
     x = 20
     y = 60
