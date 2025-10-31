@@ -99,7 +99,7 @@ def render_height_3d(df, *, z_col="noise", title="Height 3D"):
     m = np.isfinite(x) & np.isfinite(y) & np.isfinite(z)
     x, y, z = x[m], y[m], z[m]
     if len(x) < 3:
-        raise ValueError("Not enough valid points to render a 3D surface (need ≥ 3).")
+        raise ValueError("Not enough valid points.")
 
     tri = Triangulation(x, y)
 
@@ -132,7 +132,7 @@ if __name__ == "__main__":
 
     df = noise_mesh(
         df = df,
-        seed = 1,
+        seed = 0,
         amp = 1.0,
         freq = 1.0,
         max_amp = 0.0,

@@ -1,6 +1,5 @@
-import hex_geometry
-import hex_datastore
-import perlin_field
+from hex_geometry import get_planar_coords
+from perlin_field import noise_mesh
 
 import pandas as pd
 
@@ -21,11 +20,22 @@ def build_coordinates(cols: int, rows: int, map_id: str = "map001"):
 
 
 def assign_noise(df, seed, label = "noise"):
-    for col, row in zip(df['col'], df['row']):
-        print(col, row)
+    x_y = df.apply(lambda r: get_planar_coords(r['col'], r['row']), axis=1)
+    df['x'], df['y'] = zip(*x_y)
 
-    noise = 1
-    df[label] = noise
+    df = noise_mesh(
+        df, 
+        seed = 0,
+        amp = 1.0,
+        freq = 1.0,
+        max_amp = 0.0,
+        octaves = 4,
+        scale = 12,
+        persistence = 0.5,
+        lacunarity = 2.0,
+        label = "noise"
+        )
+
     return df
 
 
@@ -50,15 +60,15 @@ def assign_height(df, label = "label"):
 
 
 
-def generate_hex_map(columns, rows, seed):
+def generate_hex_map(col, row, seed):
 
     # ladda .json
 
     # koordinater
-    df = build_coordinates(columns, rows, seed)
+    df = build_coordinates(col, row, seed)
 
     # noise
-    # df = assign_noise(df, mesh)
+    df = assign_noise(df, seed, label = "noise")
 
     # topografi
     # assign_topography
@@ -81,12 +91,12 @@ def generate_hex_map(columns, rows, seed):
 
 if __name__ == "__main__":
 
-    columns = 8
-    rows = 5
+    col = 8
+    row = 5
     seed = 1
 
     # generate_hex_map(columns, rows)
+    # col_row_rairs = list(zip(map_df['col'], map_df['row']))
 
-    map_df = generate_hex_map(columns, rows, seed)
-    col_row_rairs = list(zip(map_df['col'], map_df['row']))
-    print(col_row_rairs)
+    map_df = generate_hex_map(col, row, seed)
+    print(map_df)
