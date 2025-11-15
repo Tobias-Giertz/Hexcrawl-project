@@ -82,7 +82,7 @@ def assign_topography(df, config, label = "topography"):
 def assign_forests(df, config, label = "forest"):
     df = build_noise_mesh(df, config, offset = 137, label = "forest_noise")
     bog_neighbors = config.get("bog_neighbors")
-    density = config.get("density")
+    density = float(config.get("forest_density"))
 
     potentials = df.index[df['topography'].isin(['plains', 'hill'])].to_numpy()
     water_idx = df.index[df['topography'].isin(['water'])].to_numpy()
@@ -103,16 +103,29 @@ def assign_forests(df, config, label = "forest"):
     forest_mask = noise_mask & potential_mask
 
     df[label] = forest_mask
-    df = df.drop(columns=["forest_noise"])
+    # df = df.drop(columns=["forest_noise"])
     return df
 
 
 
-def assign_biomes(df, config, label = "biome"):
+def assign_biomes(df, label = "biome"):
+    forest_bool = df["forest"].fillna(False).astype(bool)
+    terrain = df["topography"].astype('string').fillna('')
+    conditions = [
+        terrain.eq('mountain'),
+        terrain.eq('hill')   & forest_bool,
+        terrain.eq('hill'),
+        terrain.eq('plains') & forest_bool,
+        terrain.eq('plains'),
+        terrain.eq('water')  & forest_bool,
+        terrain.eq('water'),
+    ]
+    biomes = ['Mountain', 'Forest', 'Hill', 'Wood', 'Plains', 'Bog', 'Water']
 
+    result = np.select(conditions, biomes, default='Unknown')    
 
-
-    # df[label] = biomes
+    cats = ['Mountain', 'Forest', 'Hill', 'Wood', 'Plains', 'Bog', 'Water', 'Unknown']
+    df[label] = pd.Categorical(result, categories=cats, ordered=False)
     return df
 
 
@@ -138,7 +151,7 @@ def generate_hex_map():
     # print("Efter assign_forests:", df.columns)
 
     # biom
-    df = assign_biomes(df, config)
+    df = assign_biomes(df)
     # print("Efter assign_biomes:", df.columns)
 
     # höjd
@@ -147,8 +160,8 @@ def generate_hex_map():
     # resnsa worksheet
 
     # exportera till worksheet
-    map_name = config.get("map_id") + ".xlsx" 
-    df.to_excel(map_name, index=False) 
+    map_name = config.get("map_id") + ".csv" 
+    df.to_csv(map_name, index=False) 
     return df
 # ----------------- TEST AREA ----------------- #
 

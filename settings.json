@@ -11,10 +11,10 @@
     "scale": 12,
     "persistence": 0.5,
     "lacunarity": 2.0,
-    "t_mountain": 0.55,
-    "t_hill": 0.45,
-    "t_plains": 0.35,
-    "forest_density": 0.5,
+    "t_mountain": 0.65,
+    "t_hill": 0.5,
+    "t_plains": 0.45,
+    "forest_density": 0.4,
     "bog_neighbors": 2
   }
 }
