@@ -1,5 +1,8 @@
 {
   "map_settings": {
+    "map_id": "map001",
+    "columns": 24,
+    "rows": 18,
     "seed": 0,
     "amp": 1.0,
     "freq": 1.0,

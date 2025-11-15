@@ -38,7 +38,10 @@ def get_neighbor_values(df, val_col, val_row, value_col='topography', filter=Non
 
 
 
-def build_coordinates(cols: int, rows: int, map_id: str = "map001"):
+def build_coordinates(config):
+    map_id = config.get("map_id")
+    cols = config.get("columns")
+    rows = config.get("rows")
     data = []
     index = 0
     for r in range(rows):
@@ -57,7 +60,13 @@ def build_coordinates(cols: int, rows: int, map_id: str = "map001"):
 
 
 
-def assign_topography(df, t_mountain, t_hill, t_plains, label = "topography"):
+def assign_topography(df, config, label = "topography"):
+    df = build_noise_mesh(df, config, label = "noise")
+    
+    t_mountain = float(config.get("t_mountain"))
+    t_hill = float(config.get("t_hill"))
+    t_plains = float(config.get("t_plains"))
+
     z = pd.to_numeric(df["noise"], errors="coerce").fillna(0.0)
 
     out = np.full(len(z), "water", dtype=object)
@@ -70,8 +79,11 @@ def assign_topography(df, t_mountain, t_hill, t_plains, label = "topography"):
 
 
 
-def assign_forests(df, seed, octaves, scale, persistence, lacunarity, freq, amp, max_amp, density, bog_neighbors, label = "forest"):
-    df = build_noise_mesh(df, seed + 137, octaves, scale + 6, persistence, lacunarity, freq, amp, max_amp, label = "forest_noise")
+def assign_forests(df, config, label = "forest"):
+    df = build_noise_mesh(df, config, offset = 137, label = "forest_noise")
+    bog_neighbors = config.get("bog_neighbors")
+    density = config.get("density")
+
     potentials = df.index[df['topography'].isin(['plains', 'hill'])].to_numpy()
     water_idx = df.index[df['topography'].isin(['water'])].to_numpy()
 
@@ -97,45 +109,37 @@ def assign_forests(df, seed, octaves, scale, persistence, lacunarity, freq, amp,
 
 
 def assign_biomes(df, config, label = "biome"):
+
+
+
+    # df[label] = biomes
     return df
 
 
 
-def assign_height(df, label = "label"):
+def assign_height(df, label = "height"):
     return df
 
 
 
-def generate_hex_map(col, row):
+def generate_hex_map():
     config = get_section("map_settings")
-    seed = config.get("seed")
-    octaves = config.get("octaves")
-    scale = config.get("scale")
-    persistence = config.get("persistence")
-    lacunarity = config.get("lacunarity")
-    freq = config.get("freq")
-    amp = config.get("amp")
-    max_amp = config.get("max_amp")
-    t_mountain = config.get("t_mountain"),
-    t_hill = config.get("t_hill"),
-    t_plains = config.get("t_plains")
-    density = config.get("forest_density")
-    bog_neighbors = config.get("bog_neighbors")
 
     # koordinater
-    df = build_coordinates(col, row)
-
-    # noise
-    df = build_noise_mesh(df, seed, octaves, scale, persistence, lacunarity, freq, amp, max_amp)
+    df = build_coordinates(config)
+    # print("Efter build_coordinates:", df.columns)
 
     # topografi
-    df = assign_topography(df, t_mountain, t_hill, t_plains)
+    df = assign_topography(df, config)
+    # print("Efter assign_topography:", df.columns)
 
     # skog
-    df = assign_forests(df, seed, octaves, scale, persistence, lacunarity, freq, amp, max_amp, density, bog_neighbors)
+    df = assign_forests(df, config)
+    # print("Efter assign_forests:", df.columns)
 
     # biom
     df = assign_biomes(df, config)
+    # print("Efter assign_biomes:", df.columns)
 
     # höjd
     # assign_height
@@ -143,7 +147,8 @@ def generate_hex_map(col, row):
     # resnsa worksheet
 
     # exportera till worksheet
-
+    map_name = config.get("map_id") + ".xlsx" 
+    df.to_excel(map_name, index=False) 
     return df
 # ----------------- TEST AREA ----------------- #
 
@@ -166,9 +171,9 @@ if __name__ == "__main__":
 
     # col_row_rairs = list(zip(map_df['col'], map_df['row']))
 
-    map_df = generate_hex_map(cols, rows)
+    map_df = generate_hex_map()
     # render_height_3d(map_df)
-    print(map_df)
+    print(map_df.head())
     # print("Antal celler: ", col * row)
 
     # print(get_index(map_df,col,row))

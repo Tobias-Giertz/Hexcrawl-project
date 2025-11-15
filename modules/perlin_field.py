@@ -50,7 +50,15 @@ def _permutation_table(seed: int):
 
 
 
-def build_noise_mesh(df, seed, octaves, scale, persistence, lacunarity, freq, amp, max_amp, label = "noise"):
+def build_noise_mesh(df, config, offset = 0, label = "noise"):
+    seed = config.get("seed") + offset
+    octaves = config.get("octaves")
+    scale = config.get("scale")
+    persistence = config.get("persistence")
+    lacunarity = config.get("lacunarity")
+    freq = config.get("freq")
+    amp = config.get("amp")
+    max_amp = config.get("max_amp")
 
     if ('x' not in df.columns) or ('y' not in df.columns):
         if ('col' not in df.columns) or ('row' not in df.columns):
@@ -133,15 +141,15 @@ if __name__ == "__main__":
     df = pd.DataFrame(data, columns=["col", "row"])
 
     config = get_section("map_settings")
-    seed = config.get("seed")
-    octaves = config.get("octaves")
-    scale = config.get("scale")
-    persistence = config.get("persistence")
-    lacunarity = config.get("lacunarity")
-    freq = config.get("freq")
-    amp = config.get("amp")
-    max_amp = config.get("max_amp")
+    # seed = config.get("seed")
+    # octaves = config.get("octaves")
+    # scale = config.get("scale")
+    # persistence = config.get("persistence")
+    # lacunarity = config.get("lacunarity")
+    # freq = config.get("freq")
+    # amp = config.get("amp")
+    # max_amp = config.get("max_amp")
 
-    df = build_noise_mesh(df, seed, octaves, scale, persistence, lacunarity, freq, amp, max_amp)
+    df = build_noise_mesh(df, config)
     
     render_height_3d(df)
