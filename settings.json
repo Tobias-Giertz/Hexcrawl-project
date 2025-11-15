@@ -12,6 +12,6 @@
     "t_hill": 0.45,
     "t_plains": 0.35,
     "forest_density": 0.5,
-    "bog_neighbors": 3
+    "bog_neighbors": 2
   }
 }

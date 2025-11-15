@@ -2,20 +2,57 @@ import numpy as np
 import pandas as pd
 
 from config import get_section
+from hex_geometry import *
 from perlin_field import build_noise_mesh, render_height_3d
+
+def get_index(df, val_col, val_row):
+    mask_col = df['col'] == val_col
+    mask_row = df['row'] == val_row
+    matching_indices = df.index[mask_col & mask_row]
+    if len(matching_indices) == 0:
+        return None
+    return int(matching_indices[0])
+
+
+
+def get_neighbor_index(df, val_col, val_row):
+    neighbors = get_neighbors(val_col, val_row)
+    indexes = []
+    for n in neighbors:
+        idx = get_index(df, n[0], n[1])
+        if idx is not None:
+            indexes.append(idx)
+    return indexes
+
+
+
+def get_neighbor_values(df, val_col, val_row, value_col='topography', filter=None):
+    neighbors_idx = get_neighbor_index(df, val_col, val_row)
+    values = []
+    for i in neighbors_idx:
+        neighbor_val = df.iloc[i][value_col]
+        if filter is not None and neighbor_val == filter:
+            continue 
+        values.append(neighbor_val)
+    return values
+
+
 
 def build_coordinates(cols: int, rows: int, map_id: str = "map001"):
     data = []
     index = 0
     for r in range(rows):
         for c in range(cols):
+            x, y = get_cartesian(c, r)
             data.append({
                 "ID": f"{map_id}-{index}-{c}-{r}",
                 "col": c,
-                "row": r
+                "row": r,
+                "x": x,
+                "y": y
             })
             index += 1
-    df = pd.DataFrame(data, columns=["ID", "col", "row"])
+    df = pd.DataFrame(data, columns=["ID", "col", "row", "x", "y"])
     return df
 
 
@@ -33,34 +70,33 @@ def assign_topography(df, t_mountain, t_hill, t_plains, label = "topography"):
 
 
 
-def assign_forests(df, config, seed, octaves, scale, persistence, lacunarity, freq, amp, max_amp, density, bog_neighbors, label = "forest"):
-    df = build_noise_mesh(df, seed + 137, octaves, 18, persistence, lacunarity, freq, amp, max_amp, label = "forest_noise")
-    land_idx = df.index[df['value'].isin(['plains', 'hill'])].to_numpy()
+def assign_forests(df, seed, octaves, scale, persistence, lacunarity, freq, amp, max_amp, density, bog_neighbors, label = "forest"):
+    df = build_noise_mesh(df, seed + 137, octaves, scale + 6, persistence, lacunarity, freq, amp, max_amp, label = "forest_noise")
+    potentials = df.index[df['topography'].isin(['plains', 'hill'])].to_numpy()
+    water_idx = df.index[df['topography'].isin(['water'])].to_numpy()
 
-    # neighbors = _build_neighbor_index_hex(df)
-    vals = df['value'].to_numpy(dtype=object)
+    for n in water_idx:
+        col, row = df.iloc[n]['col'], df.iloc[n]['row']
+        n_val = get_neighbor_values(df, col, row, 'topography', 'water')
+        if len(n_val) >= bog_neighbors:
+            potentials = np.append(potentials, n)
 
-    shoreline = []
-    for i, nbrs in enumerate(neighbors):
-        if vals[i] == 'water':
-            non_water = sum(vals[j] != 'water' for j in nbrs)
-            if non_water >= bog_neighbors:
-                shoreline.append(i)
+    z = pd.to_numeric(df["forest_noise"], errors="coerce").fillna(0.0)
 
-    shoreline = np.array(shoreline, dtype=int)
+    noise_mask = z < density
 
-    eligible_idx = np.unique(np.concatenate([land_idx, shoreline], axis=0))
+    potential_mask = np.zeros(len(df), dtype=bool)
+    potential_mask[potentials] = True
 
-    n = len(eligible_idx) // 2
-    if n > 0:
-        chosen = rng.choice(eligible_idx, size=n, replace=False)
-        df.loc[chosen, label] = True
+    forest_mask = noise_mask & potential_mask
 
+    df[label] = forest_mask
+    df = df.drop(columns=["forest_noise"])
     return df
 
 
 
-def assign_biomes(df, label = "biome"):
+def assign_biomes(df, config, label = "biome"):
     return df
 
 
@@ -96,10 +132,10 @@ def generate_hex_map(col, row):
     df = assign_topography(df, t_mountain, t_hill, t_plains)
 
     # skog
-    # df = assign_forests(df, config, seed, octaves, scale, persistence, lacunarity, freq, amp, max_amp, density, bog_neighbors)
+    df = assign_forests(df, seed, octaves, scale, persistence, lacunarity, freq, amp, max_amp, density, bog_neighbors)
 
     # biom
-    # assign_biomes
+    df = assign_biomes(df, config)
 
     # höjd
     # assign_height
@@ -112,6 +148,9 @@ def generate_hex_map(col, row):
 # ----------------- TEST AREA ----------------- #
 
 if __name__ == "__main__":
+    """
+    Debug section
+    """
     def test_settings():
         cfg = get_section("hex_mapgeneration")
         print("perlin_field settings:", cfg)
@@ -119,11 +158,18 @@ if __name__ == "__main__":
 
     # test_settings()
 
-    col = 24
-    row = 18
+    cols = 24
+    rows = 18
+
+    col = 2
+    row = 2
 
     # col_row_rairs = list(zip(map_df['col'], map_df['row']))
 
-    map_df = generate_hex_map(col, row)
+    map_df = generate_hex_map(cols, rows)
     # render_height_3d(map_df)
     print(map_df)
+    # print("Antal celler: ", col * row)
+
+    # print(get_index(map_df,col,row))
+    # print('Neighboring indexes of ', col,',', row, ': ', get_neighbor_index(map_df, col, row))
