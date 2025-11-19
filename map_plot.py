@@ -87,8 +87,8 @@ ax.set_xlim(x_min - margin, x_max + margin)
 ax.set_ylim(y_min - margin, y_max + margin)
 
 ax.set_aspect('equal')  # ser till att 1 steg i x = 1 steg i y geometriskt
-plt.xlabel("x")
-plt.ylabel("y")
+# plt.xlabel("x")
+# plt.ylabel("y")
 plt.title("Hexagonmarkörer för datapunkter")
 # --- skapa legend ---
 proxy_handles = []

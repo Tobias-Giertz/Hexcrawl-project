@@ -50,15 +50,16 @@ def _permutation_table(seed: int):
 
 
 
-def build_noise_mesh(df, config, offset = 0, label = "noise"):
-    seed = config.get("seed") + offset
-    octaves = config.get("octaves")
-    scale = config.get("scale")
-    persistence = config.get("persistence")
-    lacunarity = config.get("lacunarity")
-    freq = config.get("freq")
-    amp = config.get("amp")
-    max_amp = config.get("max_amp")
+def build_noise_mesh(df, config, offset="medium", label="noise"):
+    noise_cfg = config["noise"][offset]
+
+    print(f"{offset.capitalize()} map")
+
+    seed = config["seed"] * noise_cfg["seed_mult"]
+    octaves = noise_cfg["octaves"]
+    scale = noise_cfg["scale"]
+    persistence = noise_cfg["persistence"]
+    lacunarity = noise_cfg["lacunarity"]
 
     if ('x' not in df.columns) or ('y' not in df.columns):
         if ('col' not in df.columns) or ('row' not in df.columns):
@@ -66,6 +67,10 @@ def build_noise_mesh(df, config, offset = 0, label = "noise"):
         x, y = get_cartesian(df['col'], df['row'])
     else:
         x, y = df['x'].to_numpy(), df['y'].to_numpy()
+
+    freq = 1.0
+    amp = 1.0
+    max_amp = 0.0
 
     p = _permutation_table(seed)
     total = np.zeros_like(x, dtype=float)
@@ -117,6 +122,18 @@ def render_height_3d(df, *, z_col="noise", title="Height 3D"):
 
 
 
+def noise_distribution(df, noise_col = "noise"):
+    noise = df[noise_col]
+
+    x = range(len(noise))
+
+    plt.figure()
+
+    plt.scatter(x, noise)
+    plt.xlabel("Index")
+    plt.ylabel("noise")
+    plt.show()
+
 # ----------------- TEST AREA ----------------- #
 
 if __name__ == "__main__":
@@ -128,8 +145,8 @@ if __name__ == "__main__":
         print("perlin_field settings:", cfg)
         return frequency, octaves, seed
 
-    x = 24
-    y = 18
+    x = 100
+    y = 100
     
     data = []
     for i in range(x):
@@ -150,6 +167,8 @@ if __name__ == "__main__":
     # amp = config.get("amp")
     # max_amp = config.get("max_amp")
 
-    df = build_noise_mesh(df, config)
-    
-    render_height_3d(df)
+    large_mesh = build_noise_mesh(df, config, offset="large", label="noise")
+    medium_mesh = build_noise_mesh(df, config, offset="medium", label="noise")
+    small_mesh = build_noise_mesh(df, config, offset="small", label="noise")
+    noise_distribution(large_mesh)
+    # render_height_3d(df)

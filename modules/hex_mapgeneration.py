@@ -3,7 +3,8 @@ import pandas as pd
 
 from config import get_section
 from hex_geometry import *
-from perlin_field import build_noise_mesh, render_height_3d
+from perlin_field import build_noise_mesh
+from pathlib import Path
 
 def get_index(df, val_col, val_row):
     mask_col = df['col'] == val_col
@@ -61,7 +62,7 @@ def build_coordinates(config):
 
 
 def assign_topography(df, config, label = "topography"):
-    df = build_noise_mesh(df, config, label = "noise")
+    df = build_noise_mesh(df, config, offset = "medium", label = "noise")
     
     t_mountain = float(config.get("t_mountain"))
     t_hill = float(config.get("t_hill"))
@@ -80,7 +81,7 @@ def assign_topography(df, config, label = "topography"):
 
 
 def assign_forests(df, config, label = "forest"):
-    df = build_noise_mesh(df, config, offset = 137, label = "forest_noise")
+    df = build_noise_mesh(df, config, offset = "small", label = "forest_noise")
     bog_neighbors = config.get("bog_neighbors")
     density = float(config.get("forest_density"))
 
@@ -160,8 +161,15 @@ def generate_hex_map():
     # resnsa worksheet
 
     # exportera till worksheet
-    map_name = config.get("map_id") + ".csv" 
-    df.to_csv(map_name, index=False) 
+    map_id = config.get("map_id")                     # Sträng som t.ex "map001"
+    base = Path("saves")                              # Basnod för alla sparade filer
+    folder = base / map_id                            # Undermapp för just denna karta
+    folder.mkdir(parents=True, exist_ok=True)         # Skapar mappen om den inte finns
+
+    map_name = f"{map_id}_map.csv"                    # Filnamn för kartan
+    filepath = folder / map_name                      # Fullständig sökväg till filen
+
+    df.to_csv(filepath, index=False)                  # Skriver CSV till rätt plats
     return df
 # ----------------- TEST AREA ----------------- #
 
